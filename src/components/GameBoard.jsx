@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
+  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
@@ -17,17 +18,19 @@ import DragWord from './DragWord';
 
 // Droppable component for the answer container
 function DroppableAnswerContainer({ children, isOver }) {
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: 'answer-container',
   });
+
+  const isActive = isOver || isOverDroppable;
 
   return (
     <div 
       ref={setNodeRef}
-      className={`min-h-[80px] p-4 rounded-md mb-6 border-2 border-dashed flex flex-wrap gap-4 items-center justify-center transition-colors ${
-        isOver 
-          ? 'bg-gray-700 border-green-400' 
-          : 'bg-gray-900 border-gray-600'
+      className={`min-h-[80px] p-4 rounded-md mb-6 border-2 border-dashed flex flex-wrap gap-4 items-center justify-center transition-all duration-200 ${
+        isActive 
+          ? 'bg-gray-700 border-green-400 scale-[1.02] shadow-lg' 
+          : 'bg-gray-900 border-gray-600 hover:border-gray-500'
       }`}
     >
       {children}
@@ -63,7 +66,10 @@ export default function GameBoard({ words, onSubmit, result }) {
   function handleDragOver(event) {
     const { over } = event;
     if (over) {
-      setIsOverAnswer(over.id === 'answer-container');
+      const isOverAnswerContainer = over.id === 'answer-container';
+      setIsOverAnswer(isOverAnswerContainer);
+    } else {
+      setIsOverAnswer(false);
     }
   }
 
@@ -123,7 +129,7 @@ export default function GameBoard({ words, onSubmit, result }) {
   return (
     <DndContext 
       sensors={sensors} 
-      collisionDetection={closestCenter} 
+      collisionDetection={closestCorners} 
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
