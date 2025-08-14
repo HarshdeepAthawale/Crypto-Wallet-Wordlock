@@ -40,7 +40,7 @@ export default function Game() {
       stopTimer();
       const transitionTimer = setTimeout(() => {
         game.setGameState('arrange');
-      }, 8000);
+      }, 5000);
       return () => clearTimeout(transitionTimer);
     } else if (game.gameState === 'arrange') {
       startTimer();

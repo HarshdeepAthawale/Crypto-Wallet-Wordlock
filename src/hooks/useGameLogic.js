@@ -7,7 +7,6 @@ const DIFFICULTY_LEVELS = {
   1: { phraseLength: 6, decoyCount: 3, points: 10 },
   2: { phraseLength: 8, decoyCount: 4, points: 15 },
   3: { phraseLength: 10, decoyCount: 5, points: 20 },
-  4: { phraseLength: 12, decoyCount: 6, points: 25 },
 };
 const MAX_ROUNDS = Object.keys(DIFFICULTY_LEVELS).length;
 

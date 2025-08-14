@@ -6,6 +6,7 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -13,6 +14,26 @@ import {
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import DragWord from './DragWord';
+
+// Droppable component for the answer container
+function DroppableAnswerContainer({ children, isOver }) {
+  const { setNodeRef } = useDroppable({
+    id: 'answer-container',
+  });
+
+  return (
+    <div 
+      ref={setNodeRef}
+      className={`min-h-[80px] p-4 rounded-md mb-6 border-2 border-dashed flex flex-wrap gap-4 items-center justify-center transition-colors ${
+        isOver 
+          ? 'bg-gray-700 border-green-400' 
+          : 'bg-gray-900 border-gray-600'
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function GameBoard({ words, onSubmit, result }) {
   const [wordItems, setWordItems] = useState([]);
@@ -42,8 +63,7 @@ export default function GameBoard({ words, onSubmit, result }) {
   function handleDragOver(event) {
     const { over } = event;
     if (over) {
-      const isOverAnswerContainer = over.data.current?.sortable?.containerId === 'answer-container';
-      setIsOverAnswer(isOverAnswerContainer);
+      setIsOverAnswer(over.id === 'answer-container');
     }
   }
 
@@ -59,7 +79,7 @@ export default function GameBoard({ words, onSubmit, result }) {
     const overId = over.id;
 
     // Check if we're dropping into the answer container
-    const isOverAnswerContainer = over.data.current?.sortable?.containerId === 'answer-container';
+    const isOverAnswerContainer = overId === 'answer-container';
     const isActiveInAnswer = playerAnswer.some(item => item.id === activeId);
     const isOverInAnswer = isOverAnswerContainer || playerAnswer.some(item => item.id === overId);
 
@@ -109,14 +129,7 @@ export default function GameBoard({ words, onSubmit, result }) {
       onDragEnd={handleDragEnd}
     >
       <div className={`w-full max-w-3xl text-center ${animationClass}`}>
-        <div 
-          id="answer-container" 
-          className={`min-h-[80px] p-4 rounded-md mb-6 border-2 border-dashed flex flex-wrap gap-4 items-center justify-center transition-colors ${
-            isOverAnswer 
-              ? 'bg-gray-700 border-green-400' 
-              : 'bg-gray-900 border-gray-600'
-          }`}
-        >
+        <DroppableAnswerContainer isOver={isOverAnswer}>
           <SortableContext items={playerAnswer} strategy={horizontalListSortingStrategy}>
             {playerAnswer.length > 0 ? (
               playerAnswer.map(item => <DragWord key={item.id} id={item.id} word={item.word} />)
@@ -124,7 +137,7 @@ export default function GameBoard({ words, onSubmit, result }) {
               <p className="text-gray-500 italic">Drag words here to form the phrase</p>
             )}
           </SortableContext>
-        </div>
+        </DroppableAnswerContainer>
         <div className="bg-gray-800 min-h-[80px] p-4 rounded-lg shadow-lg flex flex-wrap gap-4 items-center justify-center">
           <SortableContext items={wordItems} strategy={horizontalListSortingStrategy}>
             {wordItems.map(item => <DragWord key={item.id} id={item.id} word={item.word} />)}
