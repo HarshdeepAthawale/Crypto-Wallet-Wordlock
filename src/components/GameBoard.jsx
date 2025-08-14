@@ -3,6 +3,7 @@ import {
   DndContext,
   closestCenter,
   closestCorners,
+  rectIntersection,
   PointerSensor,
   useSensor,
   useSensors,
@@ -32,6 +33,10 @@ function DroppableAnswerContainer({ children, isOver }) {
           ? 'bg-gray-700 border-green-400 scale-[1.02] shadow-lg' 
           : 'bg-gray-900 border-gray-600 hover:border-gray-500'
       }`}
+      style={{ 
+        minHeight: '80px',
+        cursor: isActive ? 'copy' : 'default'
+      }}
     >
       {children}
     </div>
@@ -65,6 +70,8 @@ export default function GameBoard({ words, onSubmit, result }) {
 
   function handleDragOver(event) {
     const { over } = event;
+    console.log('Drag over:', over?.id);
+    
     if (over) {
       const isOverAnswerContainer = over.id === 'answer-container';
       setIsOverAnswer(isOverAnswerContainer);
@@ -79,7 +86,10 @@ export default function GameBoard({ words, onSubmit, result }) {
     setActiveId(null);
     setIsOverAnswer(false);
     
-    if (!over) return;
+    if (!over) {
+      console.log('No drop target found');
+      return;
+    }
     
     const activeId = active.id;
     const overId = over.id;
@@ -89,7 +99,14 @@ export default function GameBoard({ words, onSubmit, result }) {
     const isActiveInAnswer = playerAnswer.some(item => item.id === activeId);
     const isOverInAnswer = isOverAnswerContainer || playerAnswer.some(item => item.id === overId);
 
-    console.log('Drop analysis:', { isOverAnswerContainer, isActiveInAnswer, isOverInAnswer });
+    console.log('Drop analysis:', { 
+      isOverAnswerContainer, 
+      isActiveInAnswer, 
+      isOverInAnswer,
+      activeId,
+      overId,
+      playerAnswerIds: playerAnswer.map(item => item.id)
+    });
 
     // Moving from word pool to answer container
     if (!isActiveInAnswer && isOverAnswerContainer) {
@@ -129,7 +146,7 @@ export default function GameBoard({ words, onSubmit, result }) {
   return (
     <DndContext 
       sensors={sensors} 
-      collisionDetection={closestCorners} 
+      collisionDetection={rectIntersection} 
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
